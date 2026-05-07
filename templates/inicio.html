@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OLAP Games — Inicio</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/inicio.css') }}">
+</head>
+<body>
+
+<!-- Stars canvas -->
+<canvas id="stars-canvas"></canvas>
+
+<!-- WIN OVERLAY -->
+<div id="win-overlay">
+    <h2>¡STAGE CLEAR!</h2>
+    <p>Abriste el Dashboard. ¡Bien jugado, Mario!</p>
+    <button class="btn-enter" id="btn-enter-dashboard">▶ ENTRAR AL DASHBOARD</button>
+</div>
+
+<!-- GAME SCENE -->
+<div class="game-scene" id="gameScene">
+
+    <!-- Mountains -->
+    <div class="mountains">
+        <div class="mountain mountain-1"></div>
+        <div class="mountain mountain-2"></div>
+        <div class="mountain mountain-3"></div>
+        <div class="mountain mountain-4"></div>
+        <div class="mountain mountain-5"></div>
+        <div class="mountain mountain-6"></div>
+    </div>
+
+    <!-- Clouds -->
+    <div class="cloud cloud-1"><div class="cloud-body"></div></div>
+    <div class="cloud cloud-2"><div class="cloud-body"></div></div>
+    <div class="cloud cloud-3"><div class="cloud-body"></div></div>
+
+    <!-- Pipes -->
+    <div class="pipe pipe-1">
+        <div class="pipe-head"></div>
+        <div class="pipe-body"></div>
+    </div>
+    <div class="pipe pipe-2">
+        <div class="pipe-head"></div>
+        <div class="pipe-body"></div>
+    </div>
+
+    <!-- OPEN BLOCK -->
+    <div class="open-block" id="openBlock"
+         style="position:absolute; left:50%; bottom:310px; transform:translateX(-50%);">
+        <div class="block-icon">📊</div>
+        <div class="block-label">OPEN</div>
+    </div>
+
+    <!-- MARIO -->
+    <div id="mario">
+        <div class="hat"></div>
+        <div class="face">
+            <div class="eye"></div>
+        </div>
+        <div class="mustache"></div>
+        <div class="body"></div>
+        <div class="legs">
+            <div class="leg left"></div>
+            <div class="leg right"></div>
+        </div>
+    </div>
+
+    <!-- Ground -->
+    <div class="ground"></div>
+
+    <!-- HUD -->
+    <div class="hud">
+        <!-- Left: info panel -->
+        <div class="hud-panel hud-left">
+            <h1>OLAP GAMES<br>DASHBOARD</h1>
+            <p>Mueve a Mario y salta para golpear el bloque <strong style="color:#f5a623">OPEN</strong> e ingresar al dashboard de ventas.</p>
+            <div class="hint">
+                💡 Salta desde abajo hacia el bloque naranja 📊
+            </div>
+        </div>
+
+        <!-- Right: score + controls -->
+        <div class="hud-panel hud-right">
+            <div class="hud-score-label">SCORE</div>
+            <div class="hud-score" id="score-value">000000</div>
+
+            <div class="controls-grid">
+                <div class="control-item">
+                    <span class="key-badge">A / ◄</span>
+                    <span>Izquierda</span>
+                </div>
+                <div class="control-item">
+                    <span class="key-badge">D / ►</span>
+                    <span>Derecha</span>
+                </div>
+                <div class="control-item">
+                    <span class="key-badge">SPACE</span>
+                    <span>Saltar</span>
+                </div>
+                <div class="control-item">
+                    <span class="key-badge">W / ▲</span>
+                    <span>Saltar</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Mobile controls -->
+    <div style="
+        position:absolute;
+        bottom:90px;
+        left:50%;
+        transform:translateX(-50%);
+        display:flex;
+        gap:16px;
+        z-index:50;
+        pointer-events:all;
+    ">
+        <button id="btn-left" style="
+            font-size:22px;
+            width:56px; height:56px;
+            border-radius:14px;
+            background:rgba(15,23,42,0.85);
+            border:2px solid rgba(255,255,255,0.2);
+            color:white;
+            cursor:pointer;
+            touch-action:none;
+            user-select:none;
+        ">◄</button>
+        <button id="btn-jump" style="
+            font-size:22px;
+            width:56px; height:56px;
+            border-radius:14px;
+            background:rgba(233,69,96,0.85);
+            border:2px solid rgba(255,255,255,0.3);
+            color:white;
+            cursor:pointer;
+            touch-action:none;
+            user-select:none;
+        ">▲</button>
+        <button id="btn-right" style="
+            font-size:22px;
+            width:56px; height:56px;
+            border-radius:14px;
+            background:rgba(15,23,42,0.85);
+            border:2px solid rgba(255,255,255,0.2);
+            color:white;
+            cursor:pointer;
+            touch-action:none;
+            user-select:none;
+        ">►</button>
+    </div>
+
+</div><!-- /game-scene -->
+
+<script src="{{ url_for('static', filename='js/inicio.js') }}"></script>
+</body>
+</html>

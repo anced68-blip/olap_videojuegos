@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard OLAP — Ventas de Videojuegos</title>
+
+    <!-- Bootstrap -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- DataTables -->
+    <link href="https://cdn.datatables.net/2.0.8/css/dataTables.dataTables.min.css" rel="stylesheet">
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
+</head>
+<body>
+<style>
+    table.dataTable tbody tr,
+    table.dataTable tbody tr.odd,
+    table.dataTable tbody tr.even {
+        background-color: #111827 !important;
+    }
+    table.dataTable tbody tr td,
+    table.dataTable tbody tr.odd td,
+    table.dataTable tbody tr.even td {
+        color: #f1f5f9 !important;
+        background-color: transparent !important;
+    }
+    table.dataTable tbody tr:hover td,
+    table.dataTable tbody tr.odd:hover td,
+    table.dataTable tbody tr.even:hover td {
+        background-color: rgba(59,130,246,0.08) !important;
+        color: #f1f5f9 !important;
+    }
+</style>
+<!-- LOADING OVERLAY -->
+<div id="loadingOverlay" class="loading-overlay">
+    <div class="spinner"></div>
+    <p>Cargando datos desde PostgreSQL…</p>
+</div>
+
+<!-- ==================== SIDEBAR ==================== -->
+<aside class="sidebar">
+    <div class="sidebar-brand">
+        <div class="brand-icon">🎮</div>
+        <div class="brand-text">
+            <h2>OLAP Games</h2>
+            <span>Dashboard empresarial</span>
+        </div>
+    </div>
+
+    <div class="nav-section-label" style="margin-bottom:10px">Navegación</div>
+    <nav>
+        <a href="/"          class="nav-link"><span class="nav-icon">🏠</span> Inicio</a>
+        <a href="/dashboard" class="nav-link active"><span class="nav-icon">📊</span> Dashboard</a>
+        <a href="#seccion-kpis"      class="nav-link"><span class="nav-icon">📈</span> Indicadores</a>
+        <a href="#seccion-graficos"  class="nav-link"><span class="nav-icon">📉</span> Gráficos</a>
+        <a href="#seccion-tabla"     class="nav-link"><span class="nav-icon">📋</span> Tabla analítica</a>
+    </nav>
+
+    <div class="sidebar-spacer"></div>
+
+    <div class="sidebar-footer">
+        <div class="db-status">
+            <div class="db-dot"></div>
+            <div class="db-info">
+                <p>PostgreSQL</p>
+                <span>render.com · dbgames_llp4</span>
+            </div>
+        </div>
+        <p style="font-size:10px;color:var(--text-muted);margin-top:10px;text-align:center;">
+            Flask · Chart.js · DataTables
+        </p>
+    </div>
+</aside>
+
+<!-- ==================== MAIN ==================== -->
+<main class="main-content">
+
+    <!-- TOPBAR -->
+    <header class="topbar">
+        <div class="topbar-title">
+            <h1>📊 Ventas de Videojuegos</h1>
+            <p>Análisis OLAP · Ventas globales por región, plataforma, género y publisher</p>
+        </div>
+        <div class="topbar-actions">
+            <button id="btnActualizar" class="btn btn-primary">
+                ↻ Actualizar datos
+            </button>
+        </div>
+    </header>
+
+    <!-- FILTERS -->
+    <section class="filters-panel">
+        <div class="filters-header">
+            <div>
+                <h2>Filtros dinámicos</h2>
+                <p>Los filtros afectan KPIs, gráficos y tabla en tiempo real.</p>
+            </div>
+            <button id="btnLimpiarFiltros" class="btn btn-ghost">
+                ✕ Limpiar filtros
+            </button>
+        </div>
+        <div class="filters-grid">
+            <div class="filter-group">
+                <label for="filtroYear">Año</label>
+                <select id="filtroYear" class="filter-select">
+                    <option value="">Todos los años</option>
+                </select>
+            </div>
+            <div class="filter-group">
+                <label for="filtroGenre">Género</label>
+                <select id="filtroGenre" class="filter-select">
+                    <option value="">Todos los géneros</option>
+                </select>
+            </div>
+            <div class="filter-group">
+                <label for="filtroPlatform">Plataforma</label>
+                <select id="filtroPlatform" class="filter-select">
+                    <option value="">Todas las plataformas</option>
+                </select>
+            </div>
+            <div class="filter-group">
+                <label for="filtroPublisher">Publisher</label>
+                <select id="filtroPublisher" class="filter-select">
+                    <option value="">Todos los publishers</option>
+                </select>
+            </div>
+        </div>
+    </section>
+
+    <!-- KPIs -->
+    <section id="seccion-kpis" class="kpi-grid">
+        <article class="kpi-card">
+            <div class="kpi-icon-wrap">💰</div>
+            <div class="kpi-label">Ventas globales</div>
+            <div class="kpi-value" id="kpiVentas">—</div>
+            <div class="kpi-sub">Millones USD</div>
+        </article>
+
+        <article class="kpi-card">
+            <div class="kpi-icon-wrap">🎮</div>
+            <div class="kpi-label">Total videojuegos</div>
+            <div class="kpi-value" id="kpiJuegos">—</div>
+            <div class="kpi-sub">Registros analizados</div>
+        </article>
+
+        <article class="kpi-card">
+            <div class="kpi-icon-wrap">📅</div>
+            <div class="kpi-label">Año líder</div>
+            <div class="kpi-value" id="kpiAnio">—</div>
+            <div class="kpi-sub">Mayor venta acumulada</div>
+        </article>
+
+        <article class="kpi-card">
+            <div class="kpi-icon-wrap">🧩</div>
+            <div class="kpi-label">Género líder</div>
+            <div class="kpi-value" id="kpiGenero" style="font-size:16px">—</div>
+            <div class="kpi-sub">Más vendido</div>
+        </article>
+
+        <article class="kpi-card">
+            <div class="kpi-icon-wrap">🕹️</div>
+            <div class="kpi-label">Plataforma líder</div>
+            <div class="kpi-value" id="kpiPlataforma">—</div>
+            <div class="kpi-sub">Mayor participación</div>
+        </article>
+
+        <article class="kpi-card">
+            <div class="kpi-icon-wrap">🏢</div>
+            <div class="kpi-label">Publisher líder</div>
+            <div class="kpi-value" id="kpiPublisher" style="font-size:14px">—</div>
+            <div class="kpi-sub">Mayor venta global</div>
+        </article>
+    </section>
+
+    <!-- CHARTS -->
+    <section id="seccion-graficos" class="charts-grid">
+
+        <!-- Ventas por año -->
+        <article class="chart-card">
+            <div class="chart-header">
+                <h3>📈 Ventas globales por año</h3>
+                <p>Tendencia histórica de ventas en millones USD</p>
+            </div>
+            <div class="chart-wrapper">
+                <canvas id="chartAnio"></canvas>
+            </div>
+        </article>
+
+        <!-- Ventas por género -->
+        <article class="chart-card">
+            <div class="chart-header">
+                <h3>🧩 Ventas por género</h3>
+                <p>Distribución por categoría de videojuego</p>
+            </div>
+            <div class="chart-wrapper">
+                <canvas id="chartGenero"></canvas>
+            </div>
+        </article>
+
+        <!-- Ventas por plataforma -->
+        <article class="chart-card">
+            <div class="chart-header">
+                <h3>🕹️ Top 10 plataformas</h3>
+                <p>Plataformas con mayor venta acumulada</p>
+            </div>
+            <div class="chart-wrapper">
+                <canvas id="chartPlataforma"></canvas>
+            </div>
+        </article>
+
+        <!-- Ventas por región -->
+        <article class="chart-card">
+            <div class="chart-header">
+                <h3>🌎 Ventas por región</h3>
+                <p>Norteamérica · Europa · Japón · Otros</p>
+            </div>
+            <div class="chart-wrapper">
+                <canvas id="chartRegion"></canvas>
+            </div>
+        </article>
+
+        <!-- Top 10 videojuegos — full width -->
+        <article class="chart-card span-2">
+            <div class="chart-header">
+                <h3>🏆 Top 10 videojuegos más vendidos</h3>
+                <p>Ranking de títulos con mayor venta global acumulada</p>
+            </div>
+            <div class="chart-wrapper">
+                <canvas id="chartTop"></canvas>
+            </div>
+        </article>
+
+    </section>
+
+    <!-- TABLE -->
+    <section id="seccion-tabla" class="table-panel">
+        <div class="panel-header">
+            <div>
+                <h2>📋 Tabla analítica de videojuegos</h2>
+                <p>Consulta interactiva con búsqueda, ordenamiento y paginación</p>
+            </div>
+        </div>
+        <div class="table-responsive">
+            <table id="tablaVideojuegos" class="table">
+                <thead>
+                    <tr>
+                        <th>Nombre</th>
+                        <th>Plataforma</th>
+                        <th>Año</th>
+                        <th>Género</th>
+                        <th>Publisher</th>
+                        <th>Ventas globales</th>
+                    </tr>
+                </thead>
+                <tbody></tbody>
+            </table>
+        </div>
+    </section>
+
+    <!-- FOOTER -->
+    <footer class="footer">
+        <p>Dashboard OLAP · Flask + PostgreSQL + Chart.js + DataTables · 2025</p>
+    </footer>
+
+</main>
+
+<!-- Libraries -->
+<script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="https://cdn.datatables.net/2.0.8/js/dataTables.min.js"></script>
+<!-- Custom JS -->
+<script src="{{ url_for('static', filename='js/script.js') }}"></script>
+</body>
+</html>
